@@ -1,0 +1,8 @@
+.DS_STORE
+
+*.swp
+*.vim
+
+/.env
+/config.toml
+/suggester-gateway
