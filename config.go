@@ -1,4 +1,4 @@
-package config
+package main
 
 import (
 	"io/ioutil"
@@ -12,7 +12,7 @@ type Config struct {
 	Shards int    `toml:"shards"`
 }
 
-func Parse(file string) Config {
+func ParseConfig(file string) Config {
 	f, err := ioutil.ReadFile(file)
 	if err != nil {
 		log.Fatalf("error reading config file: %v\n", err)

@@ -1,33 +1,31 @@
-package shard
+package main
 
 import (
 	"context"
 	"log"
 	"sync"
 
-	"github.com/suggester/suggester-gateway/config"
-
 	"github.com/bwmarrin/discordgo"
 )
 
 type Shard struct {
-	sync.Mutex
-
 	ID     int
-	config *config.Config
+	config *Config
 
 	Session *discordgo.Session
 	ctx     context.Context
 	wg      *sync.WaitGroup
-	done    chan struct{}
+	cancel  context.CancelFunc
 }
 
-func NewManaged(ctx context.Context, wg *sync.WaitGroup, cfg *config.Config, id int) Shard {
+func NewManagedShard(ctx context.Context, wg *sync.WaitGroup, cfg *Config, id int) Shard {
+	ctx, cancel := context.WithCancel(ctx)
 	return Shard{
 		config: cfg,
 		ID:     id,
 		ctx:    ctx,
 		wg:     wg,
+		cancel: cancel,
 	}
 }
 
@@ -44,6 +42,7 @@ func (sh *Shard) Up() {
 	s.State = nil
 	s.StateEnabled = false
 	s.Identify.Shard = &[2]int{sh.ID, sh.config.Shards}
+	s.Identify.Intents = discordgo.IntentsDirectMessages
 
 	s.AddHandler(func(session *discordgo.Session, r *discordgo.Ready) {
 		log.Printf("[Shard=%v] ready\n", sh.ID)
@@ -56,14 +55,10 @@ func (sh *Shard) Up() {
 		log.Fatalf("[Shard=%v] failed to open websocket connection: %v\n", sh.ID, err)
 	}
 
-	select {
-	case <-sh.ctx.Done():
-	case <-sh.done:
-		sh.Down()
-	}
-	log.Printf("[Shard=%v] stopping shard", sh.ID)
+	defer sh.Down()
+	<-sh.ctx.Done()
 }
 
 func (sh *Shard) Down() {
-	sh.done <- struct{}{}
+	sh.cancel()
 }

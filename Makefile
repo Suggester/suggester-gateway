@@ -1,8 +1,8 @@
-MAIN := ./main.go
+MAIN := $(wildcard *.go)
 OUTPUT := suggester-gateway
 
-PKG := $(shell find . -type f -name '*.go')
-DEPS := $(shell find . -type f -name '*.mod')
+PKG := $(wildcard *.go)
+DEPS := $(wildcard *.mod)
 
 $(OUTPUT): $(MAIN) $(PKG) $(DEPS)
 	go build -o $(OUTPUT) $(MAIN) -ldflags "-s -w"

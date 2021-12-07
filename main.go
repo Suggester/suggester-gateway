@@ -7,16 +7,13 @@ import (
 	"os/signal"
 	"sync"
 	"time"
-
-	"github.com/suggester/suggester-gateway/config"
-	"github.com/suggester/suggester-gateway/shard"
 )
 
-var cfg config.Config
+var cfg Config
 
 func init() {
 	cfgPath := flag.String("c", "config.toml", "path to config.toml")
-	cfg = config.Parse(*cfgPath)
+	cfg = ParseConfig(*cfgPath)
 }
 
 func main() {
@@ -40,7 +37,7 @@ CreateShard:
 		default:
 			wg.Add(1)
 
-			sh := shard.NewManaged(ctx, wg, &cfg, i)
+			sh := NewManagedShard(ctx, wg, &cfg, i)
 			go sh.Up()
 			<-time.NewTimer(time.Millisecond * 5_500).C
 		}
