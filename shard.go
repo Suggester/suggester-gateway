@@ -14,25 +14,21 @@ type Shard struct {
 
 	Session *discordgo.Session
 	ctx     context.Context
-	wg      *sync.WaitGroup
 	cancel  context.CancelFunc
 }
 
-func NewManagedShard(ctx context.Context, wg *sync.WaitGroup, cfg *Config, id int) Shard {
+func NewManagedShard(ctx context.Context, cfg *Config, id int) Shard {
 	ctx, cancel := context.WithCancel(ctx)
 	return Shard{
 		config: cfg,
 		ID:     id,
 		ctx:    ctx,
-		wg:     wg,
 		cancel: cancel,
 	}
 }
 
-func (sh *Shard) Up() {
-	if wg := sh.wg; wg != nil {
-		defer wg.Done()
-	}
+func (sh *Shard) Up(wg *sync.WaitGroup) {
+	defer wg.Done()
 
 	s, err := discordgo.New("Bot " + sh.config.Token)
 	if err != nil {

@@ -37,8 +37,8 @@ CreateShard:
 		default:
 			wg.Add(1)
 
-			sh := NewManagedShard(ctx, wg, &cfg, i)
-			go sh.Up()
+			sh := NewManagedShard(ctx, &cfg, i)
+			go sh.Up(wg)
 			<-time.NewTimer(time.Millisecond * 5_500).C
 		}
 	}
